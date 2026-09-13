@@ -1,12 +1,11 @@
 <?php
-//USER MANAGEMENT
+//user management
 function getAllUsers($conn) {
     $r = mysqli_query($conn, "SELECT id, name, email, phone, role, is_verified FROM users ORDER BY id DESC");
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
 }
 
-//Live search used by the AJAX user-search box on the admin Users page.
-//Matches on name, email, or phone; each is optional and combined with AND.
+//Live search.
 function searchUsers($conn, $term) {
     $like = '%' . $term . '%';
     $stmt = mysqli_prepare($conn, "SELECT id, name, email, phone, role, is_verified FROM users
@@ -53,7 +52,7 @@ function updateUserRole($conn, $userId, $role) {
     return $ok;
 }
 
-//DISCOUNTS (revenue management)
+// revenue management
 function getAllDiscounts($conn) {
     $r = mysqli_query($conn, "SELECT * FROM discounts ORDER BY id DESC");
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
@@ -75,7 +74,7 @@ function toggleDiscountStatus($conn, $id, $status) {
     return $ok;
 }
 
-//SPECIAL REQUESTS MODERATION
+//special request moderation
 function getAllSpecialRequests($conn) {
     $stmt = mysqli_prepare($conn, "SELECT sr.*, u.name AS user_name, v.company_name
                                     FROM special_requests sr
@@ -88,7 +87,7 @@ function getAllSpecialRequests($conn) {
     return $rows;
 }
 
-//RATINGS OVERSIGHT (user reviews of guides & hotel listings)
+//rating oversight
 function getAllRatings($conn) {
     $r = mysqli_query($conn, "SELECT r.*, u.name AS rater_name,
                                       CASE
@@ -104,40 +103,33 @@ function getAllRatings($conn) {
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
 }
 
-//DASHBOARD STATS
+//dashboard
 function getDashboardStats($conn) {
     $stats = [];
 
-    // User counts by role
     $r = mysqli_query($conn, "SELECT role, COUNT(*) as count FROM users GROUP BY role");
     $stats['users_by_role'] = mysqli_fetch_all($r, MYSQLI_ASSOC);
 
-    // Total users
     $r = mysqli_query($conn, "SELECT COUNT(*) as count FROM users");
     $stats['total_users'] = mysqli_fetch_assoc($r)['count'];
 
-    // Users pending verification
     $r = mysqli_query($conn, "SELECT COUNT(*) as count FROM users WHERE is_verified = 0");
     $stats['pending_verification'] = mysqli_fetch_assoc($r)['count'];
 
-    // Total tours + by status
     $r = mysqli_query($conn, "SELECT COUNT(*) as count FROM tours");
     $stats['total_tours'] = mysqli_fetch_assoc($r)['count'];
 
     $r = mysqli_query($conn, "SELECT status, COUNT(*) as count FROM tours GROUP BY status");
     $stats['tours_by_status'] = mysqli_fetch_all($r, MYSQLI_ASSOC);
 
-    // Total listings
     $r = mysqli_query($conn, "SELECT COUNT(*) as count FROM listings");
     $stats['total_listings'] = mysqli_fetch_assoc($r)['count'];
 
-    // Total confirmed bookings + revenue
     $r = mysqli_query($conn, "SELECT COUNT(*) as count, COALESCE(SUM(total_amount),0) as revenue FROM bookings WHERE status = 'confirmed'");
     $row = mysqli_fetch_assoc($r);
     $stats['total_bookings'] = $row['count'];
     $stats['total_revenue'] = $row['revenue'];
 
-    // Pending special requests
     $r = mysqli_query($conn, "SELECT COUNT(*) as count FROM special_requests WHERE status = 'pending'");
     $stats['pending_requests'] = mysqli_fetch_assoc($r)['count'];
 

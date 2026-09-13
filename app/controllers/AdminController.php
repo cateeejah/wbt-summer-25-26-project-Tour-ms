@@ -3,14 +3,12 @@ function adminCtrl($conn) {
     $action = $_GET['action'] ?? 'dashboard';
     $error = '';
 
-    //USER MANAGEMENT
+    //user management
     if ($action === 'users') {
-        //Handle user deletion
         if (isset($_GET['delete']) && isset($_GET['id'])) {
             csrf_check();
             $userId = intval($_GET['id']);
 
-            // Prevent self-deletion
             if ($userId === $_SESSION['user']['id']) {
                 $error = "You can't delete your own account";
             } else {
@@ -24,7 +22,6 @@ function adminCtrl($conn) {
             }
         }
 
-        //Handle new user creation
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_user'])) {
             csrf_check();
             $name = trim($_POST['name'] ?? '');
@@ -34,7 +31,7 @@ function adminCtrl($conn) {
             $role = $_POST['role'] ?? 'user';
             $v = intval($_POST['is_verified'] ?? 0);
 
-            //Role-specific fields (only relevant when role is guide or vendor)
+            //Role-specific fields
             $guideLocation = trim($_POST['location'] ?? '');
             $guideRate = $_POST['daily_rate'] ?? 0;
             $vendorType = $_POST['vendor_type'] ?? 'hotel';
@@ -69,7 +66,7 @@ function adminCtrl($conn) {
             }
         }
 
-        //Handle verification toggle
+        // verification toggle handling
         if (isset($_GET['verify']) && isset($_GET['id'])) {
             csrf_check();
             $userId = intval($_GET['id']);
@@ -84,10 +81,7 @@ function adminCtrl($conn) {
             }
         }
 
-        //Handle role change. If promoting someone into guide/vendor, create the
-        //matching role-specific row too (with placeholder details they can
-        //fill in from their own dashboard) — otherwise they'd hit "no
-        //profile found" the moment they land on their new dashboard.
+        // changing roles from admin.
         if (isset($_GET['new_role']) && isset($_GET['id'])) {
             csrf_check();
             $userId = intval($_GET['id']);
@@ -115,7 +109,7 @@ function adminCtrl($conn) {
         return;
     }
 
-    //NOTIFICATIONS (admin broadcast)
+    //notification management
     if ($action === 'notifications') {
         if (isset($_GET['delete']) && isset($_GET['id'])) {
             csrf_check();
@@ -144,7 +138,7 @@ function adminCtrl($conn) {
         return;
     }
 
-    //DISCOUNTS (revenue management)
+    //discounts & revenue management
     if ($action === 'discounts') {
         if (isset($_GET['toggle']) && isset($_GET['id'])) {
             csrf_check();
@@ -177,21 +171,21 @@ function adminCtrl($conn) {
         return;
     }
 
-    //SPECIAL REQUEST OVERSIGHT (view-only — vendors approve/reject their own)
+    //special request oversight
     if ($action === 'requests') {
         $specialRequests = getAllSpecialRequests($conn);
         require 'app/views/admin/moderate_requests.php';
         return;
     }
 
-    //RATINGS OVERSIGHT (view-only — user reviews of guides & listings)
+    //rating oversight
     if ($action === 'ratings') {
         $ratings = getAllRatings($conn);
         require 'app/views/admin/ratings.php';
         return;
     }
 
-    //ADMIN DASHBOARD
+    //Dashboard
     $stats = getDashboardStats($conn);
     require 'app/views/admin/dashboard.php';
 }

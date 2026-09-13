@@ -1,5 +1,5 @@
 <?php
-//Admin broadcast to all users or a specific role (user_id stays NULL)
+//Admin broadcast
 function createNotification($conn, $title, $message, $targetRole) {
     $stmt = mysqli_prepare($conn, "INSERT INTO notifications (title, message, target_role) VALUES (?, ?, ?)");
     mysqli_stmt_bind_param($stmt, 'sss', $title, $message, $targetRole);
@@ -8,8 +8,7 @@ function createNotification($conn, $title, $message, $targetRole) {
     return $ok;
 }
 
-//All admin-created broadcasts (for the admin management list — personal
-//notifications sent to individual users are excluded from this list)
+//all admin notification
 function getAllNotifications($conn) {
     $r = mysqli_query($conn, "SELECT * FROM notifications WHERE user_id IS NULL ORDER BY created_at DESC");
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
@@ -23,7 +22,7 @@ function deleteNotification($conn, $id) {
     return $ok;
 }
 
-//Create a personal notification for a single user (e.g. special request response)
+// Single user notification
 function notifyUser($conn, $userId, $title, $message) {
     $stmt = mysqli_prepare($conn, "INSERT INTO notifications (user_id, title, message, target_role) VALUES (?, ?, ?, 'all')");
     mysqli_stmt_bind_param($stmt, 'iss', $userId, $title, $message);
@@ -32,8 +31,6 @@ function notifyUser($conn, $userId, $title, $message) {
     return $ok;
 }
 
-//Get all notifications visible to a given user: personal ones addressed to
-//them, plus admin broadcasts matching 'all' or their role.
 function getNotificationsForUser($conn, $userId, $role) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM notifications
                                     WHERE user_id = ?
@@ -47,7 +44,7 @@ function getNotificationsForUser($conn, $userId, $role) {
     return $rows;
 }
 
-//Count of unread notifications visible to a user (for a navbar badge)
+//Count of unread notifications
 function getUnreadNotificationCount($conn, $userId, $role) {
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as c FROM notifications
                                     WHERE is_read = 0
@@ -59,10 +56,7 @@ function getUnreadNotificationCount($conn, $userId, $role) {
     return (int)$count;
 }
 
-//Mark a broadcast/personal notification as read for this viewer.
-//Broadcasts are shared rows, so this marks it read globally once anyone on
-//that role has opened it — acceptable tradeoff given the schema has no
-//per-user read-state join table.
+// mark notifications as read
 function markNotificationRead($conn, $notificationId) {
     $stmt = mysqli_prepare($conn, "UPDATE notifications SET is_read = 1 WHERE id = ?");
     mysqli_stmt_bind_param($stmt, 'i', $notificationId);

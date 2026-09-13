@@ -17,12 +17,12 @@ $user = $_SESSION['user'];
 <main class="main-content">
     <div class="page-header">
         <h1 class="page-title">Administrative Control Panel</h1>
-        <p class="page-sub">Welcome back, Administrator. Overview of system health and pending tasks.</p>
+        <p class="page-sub">Welcome back, Administrator. Overview of operation and pending tasks.</p>
     </div>
 
     <div class="admin-stack">
         <div class="card stat-card">
-            <h3 class="card-title">User Community</h3>
+            <h3 class="card-title">users Overview</h3>
             <div class="stat-value">
                 <?= $stats['total_users'] ?>
             </div>

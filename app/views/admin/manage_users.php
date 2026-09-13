@@ -41,7 +41,7 @@ $user = $_SESSION['user'];
         <?php if ($msg): ?><div class="alert alert-success"><?= $msg ?></div><?php endif; ?>
     <?php endif; ?>
 
-    <!-- ADD USER FORM -->
+    <!-- user form -->
     <div class="card card-margin-bottom">
         <h3 class="card-title">Add New System User</h3>
         <form method="POST" action="index.php?page=admin&action=users" class="form form-aligned" onsubmit="return validateForm(this)">
@@ -91,7 +91,7 @@ $user = $_SESSION['user'];
                         <input type="text" name="location" id="add-location" data-label="Guiding location" placeholder="e.g. Cox's Bazar">
                     </div>
                     <div class="field">
-                        <label>Daily Rate (USD)</label>
+                        <label> Daily Rate (BDT)</label>
                         <input type="number" step="0.01" min="0" name="daily_rate" data-label="Daily rate" placeholder="e.g. 50.00">
                     </div>
                 </div>
@@ -128,7 +128,7 @@ $user = $_SESSION['user'];
         </div>
 
         <div class="field">
-            <input type="text" id="userSearch" placeholder="Search by name, email, or phone...">
+            <input type="text" id="userSearch" class="search-input" placeholder="Search by name, email, or phone...">
         </div>
 
         <div class="table-wrap">
@@ -236,7 +236,7 @@ function deleteUser(id) {
     });
 }
 
-/* ---------- Live search over the user list ---------- */
+/* ---------- Live search ---------- */
 const CSRF_TOKEN = '<?= csrf_token() ?>';
 
 function roleOption(user, value, label) {
