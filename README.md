@@ -13,7 +13,7 @@ app/
 config/              # unchanged (database.php, app.php)
 css/                 # Contains stylesheet of the project
 Assets/              # Contains only javascipt files of the project
-├── js/              # moved from assets/js/
+├── js/              # Contains validation & search script files
 index.php            # central routing file
 database.sql         # project database
 ```
