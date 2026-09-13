@@ -6,17 +6,14 @@ This project follows the MVC (Model-View Controller) Pattern:
 
 ```
 app/
-├── Controllers/     # was app/controllers (capitalized)
-├── Models/          # was app/models (capitalized)
-├── Views/           # was app/views (capitalized)
-└── helpers/         # kept as-is (shared helper functions)
+├── Controllers/     # Contains controller files of the project
+├── Models/          # Contains model files of the project
+├── Views/           # Contains front-end view files of the project
+└── helpers/         # Contains web-security file named as helpers.php
 config/              # unchanged (database.php, app.php)
-routes/
-└── web.php          # NEW: the URL→controller dispatch logic, pulled out of index.php
-public/
-├── css/             # moved from root css/
+css/                 # Contains stylesheet of the project
+Assets/              # Contains only javascipt files of the project
 ├── js/              # moved from assets/js/
-└── index.php        # moved from root; now a slim front controller that bootstraps the app and hands off to routes/web.php
-uploads/             # unchanged
-database.sql         # left at project root
+index.php            # central routing file
+database.sql         # project database
 ```
