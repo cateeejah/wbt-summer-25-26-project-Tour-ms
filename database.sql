@@ -1,17 +1,6 @@
 CREATE DATABASE IF NOT EXISTS tourms_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE tourms_db;
 
--- ============================================================
--- MIGRATION (run this block only if your tourms_db already
--- exists from before this fix — safe to skip on a fresh import,
--- the CREATE TABLE statements below already reflect these changes)
--- ============================================================
--- ALTER TABLE tours MODIFY user_id INT DEFAULT NULL;
--- ALTER TABLE notifications ADD COLUMN user_id INT DEFAULT NULL AFTER id;
--- ALTER TABLE notifications ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0;
--- ALTER TABLE notifications ADD FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
--- ============================================================
-
 -- Master user table
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -124,9 +113,7 @@ CREATE TABLE IF NOT EXISTS special_requests (
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Admin Broadcast Notifications + personal system notifications (e.g. special
--- request responses). Broadcasts have user_id = NULL and use target_role;
--- personal notifications have user_id set and target_role is irrelevant.
+-- Notifications
 CREATE TABLE IF NOT EXISTS notifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT DEFAULT NULL,
