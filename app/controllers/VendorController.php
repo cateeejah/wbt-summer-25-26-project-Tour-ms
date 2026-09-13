@@ -12,6 +12,7 @@ function vendorCtrl($conn) {
     $action = $_GET['action'] ?? 'dashboard';
     $error = '';
 
+    //Create a new listing
     if ($action === 'add_listing' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         $title = trim($_POST['title'] ?? '');
@@ -27,6 +28,7 @@ function vendorCtrl($conn) {
         }
     }
 
+    //Update an existing listing
     if ($action === 'edit_listing' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         $listingId = intval($_POST['listing_id'] ?? 0);
@@ -43,6 +45,7 @@ function vendorCtrl($conn) {
         }
     }
 
+    //Toggle a listing's availability status
     if ($action === 'toggle_listing' && isset($_GET['id']) && isset($_GET['status'])) {
         csrf_check();
         $allowed = ['available', 'booked', 'in_maintenance'];
@@ -52,6 +55,7 @@ function vendorCtrl($conn) {
         exit;
     }
 
+    //Delete a listing
     if ($action === 'delete_listing' && isset($_GET['id'])) {
         csrf_check();
         if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
@@ -64,6 +68,7 @@ function vendorCtrl($conn) {
         exit;
     }
 
+    //Approve/reject a special request addressed to this vendor
     if ($action === 'respond_request' && isset($_GET['id']) && isset($_GET['status'])) {
         csrf_check();
         $status = $_GET['status'] === 'approved' ? 'approved' : 'rejected';
@@ -79,6 +84,7 @@ function vendorCtrl($conn) {
         exit;
     }
 
+    //Update vendor company profile
     if ($action === 'update_profile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         $company = trim($_POST['company_name'] ?? '');
@@ -93,12 +99,14 @@ function vendorCtrl($conn) {
         }
     }
 
+    //Dedicated requests sub-page
     if ($action === 'requests') {
         $requests = getRequestsByVendor($conn, $vendorId);
         require 'app/views/vendor/requests.php';
         return;
     }
 
+    //Editing a specific listing (loads it into the form)
     $editing = null;
     if ($action === 'edit' && isset($_GET['id'])) {
         $listing = getListingById($conn, intval($_GET['id']));
@@ -107,7 +115,7 @@ function vendorCtrl($conn) {
         }
     }
 
-    $vendor = getVendorByUserId($conn, $userId);
+    $vendor = getVendorByUserId($conn, $userId); // re-fetch in case profile just changed
     $listings = getListingsByVendor($conn, $vendorId);
     $bookingSummary = getVendorBookingSummary($conn, $vendorId);
     $pendingRequestCount = 0;

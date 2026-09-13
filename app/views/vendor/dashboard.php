@@ -97,7 +97,7 @@ $flash = isset($_GET['msg']) ? ($statusMessages[$_GET['msg']] ?? null) : null;
                     </select>
                 </div>
                 <div class="field">
-                    <label>Price (BDT)</label>
+                    <label>Price (USD)</label>
                     <input type="number" step="0.01" min="0" name="price" required data-label="Price"
                            value="<?= htmlspecialchars($editing['price'] ?? '') ?>">
                 </div>
@@ -116,7 +116,7 @@ $flash = isset($_GET['msg']) ? ($statusMessages[$_GET['msg']] ?? null) : null;
             <span class="badge" id="listingCount"><?= count($listings) ?> total</span>
         </div>
         <div class="field">
-            <input type="text" id="listingSearch" class="search-input" placeholder="Search your listings by title...">
+            <input type="text" id="listingSearch" placeholder="Search your listings by title...">
         </div>
         <div class="table-wrap">
             <table class="data-table">
@@ -180,7 +180,7 @@ function deleteListing(id) {
     });
 }
 
-/* ---------- Live search for vendor ---------- */
+/* ---------- Live search over this vendor's own listings ---------- */
 function runListingSearch() {
     ajaxTable({
         url:     'index.php?page=ajax&action=search_listings&q=' +

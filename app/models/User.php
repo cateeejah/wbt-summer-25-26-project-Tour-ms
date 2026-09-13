@@ -1,4 +1,5 @@
 <?php
+//Register a new user
 function addUser($conn, $name, $email, $password, $role, $phone = null) {
     $hash = password_hash($password, PASSWORD_DEFAULT);
     $stmt = mysqli_prepare($conn, "INSERT INTO users (name, email, password_hash, phone, role, is_verified) VALUES (?, ?, ?, ?, ?, 0)");
@@ -9,6 +10,8 @@ function addUser($conn, $name, $email, $password, $role, $phone = null) {
     return $ok ? $newId : false;
 }
 
+//Create the role-specific row for a newly registered guide or vendor.
+//Called after addUser() succeeds, using the new user's id.
 function createRoleProfile($conn, $userId, $role, $extra = []) {
     if ($role === 'guide') {
         $location = $extra['location'] ?? '';
@@ -29,9 +32,10 @@ function createRoleProfile($conn, $userId, $role, $extra = []) {
         mysqli_stmt_close($stmt);
         return $ok;
     }
-    return true;
+    return true; // 'user' and 'admin' need no role-specific row
 }
 
+//Authenticate user by email and password
 function authUser($conn, $email, $password) {
     $stmt = mysqli_prepare($conn, "SELECT id, name, email, password_hash, phone, role, is_verified, profile_picture FROM users WHERE email = ?");
     mysqli_stmt_bind_param($stmt, 's', $email);
@@ -45,6 +49,7 @@ function authUser($conn, $email, $password) {
     return false;
 }
 
+//Check if email already exists (to prevent duplicates during registration)
 function emailExists($conn, $email, $excludeId = null) {
     if ($excludeId) {
         $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE email = ? AND id != ?");
@@ -60,6 +65,7 @@ function emailExists($conn, $email, $excludeId = null) {
     return $exists;
 }
 
+//Update remember token
 function updateRememberToken($conn, $id, $token) {
     $stmt = mysqli_prepare($conn, "UPDATE users SET remember_token = ? WHERE id = ?");
     mysqli_stmt_bind_param($stmt, 'si', $token, $id);
@@ -68,6 +74,7 @@ function updateRememberToken($conn, $id, $token) {
     return $ok;
 }
 
+//Get user by remember token
 function getUserByRememberToken($conn, $token) {
     $hashed_token = hash('sha256', $token);
     $stmt = mysqli_prepare($conn, "SELECT id, name, email, role, is_verified, profile_picture FROM users WHERE remember_token = ?");
