@@ -15,6 +15,9 @@ $statusMessages = [
     'error' => ['error', 'Something went wrong.'] 
 ];
 
+
+
+
 $flash = isset($_GET['msg']) ? ($statusMessages[$_GET['msg']] ?? null) : null; 
 ?>
 
@@ -152,7 +155,7 @@ $flash = isset($_GET['msg']) ? ($statusMessages[$_GET['msg']] ?? null) : null;
                     </div> 
 
                     <div class="field"> 
-                        <label>Daily Rate (USD)</label> 
+                        <label>Daily Rate (BDT)</label> 
 
                         <input type="number" 
                                step="0.01" 
