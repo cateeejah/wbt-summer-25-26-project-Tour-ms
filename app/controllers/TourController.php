@@ -4,7 +4,7 @@ function userCtrl($conn) {
     $action = $_GET['action'] ?? 'explore';
     $error = '';
 
-    // new tour request creation
+    //Create a new tour request
     if ($action === 'request_tour' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         $title = trim($_POST['title'] ?? '');
@@ -24,7 +24,7 @@ function userCtrl($conn) {
         }
     }
 
-    //Cancelation tour request
+    //Cancel own pending tour request
     if ($action === 'cancel_tour' && isset($_GET['id'])) {
         csrf_check();
         $ok = cancelOwnTour($conn, intval($_GET['id']), $userId);
@@ -32,7 +32,7 @@ function userCtrl($conn) {
         exit;
     }
 
-    // guide rating after completed tour
+    //Rate a guide after a completed tour
     if ($action === 'rate_guide' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         csrf_check();
         $tourId = intval($_POST['tour_id'] ?? 0);

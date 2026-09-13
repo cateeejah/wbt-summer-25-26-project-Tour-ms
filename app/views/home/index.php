@@ -14,6 +14,7 @@
 
 <main class="main-content">
     <?php if (!isset($_SESSION['user'])): ?>
+        <!-- VIEW FOR NON-REGISTERED USERS -->
         <div class="page-header">
             <h1 class="page-title">Plan Your Perfect Tour</h1>
             <p class="page-sub">Book guides, hotels, and vehicles all in one place — with verified reviews and transparent pricing.</p>
@@ -24,6 +25,7 @@
         </div>
 
     <?php elseif ($_SESSION['user']['is_verified'] == 0): ?>
+        <!-- VIEW FOR LOGGED-IN BUT NOT VERIFIED USERS -->
         <div class="page-header">
             <div class="card">
                 <h1 class="page-title">Verification Pending</h1>
@@ -36,6 +38,7 @@
         </div>
 
     <?php else: ?>
+        <!-- VERIFIED USER: role-appropriate welcome -->
         <div class="page-header">
             <h1 class="page-title">Welcome back, <?= htmlspecialchars($_SESSION['user']['name']) ?>!</h1>
             <p class="page-sub">

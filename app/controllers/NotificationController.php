@@ -3,7 +3,7 @@ function notificationsCtrl($conn) {
     $userId = $_SESSION['user']['id'];
     $role = $_SESSION['user']['role'];
 
-    //notification marking
+    //Mark one notification read, then return to the inbox
     if (isset($_GET['mark_read']) && isset($_GET['id'])) {
         csrf_check();
         markNotificationRead($conn, intval($_GET['id']));
@@ -11,6 +11,7 @@ function notificationsCtrl($conn) {
         exit;
     }
 
+    //Mark everything visible to this user as read
     if (isset($_GET['mark_all_read'])) {
         csrf_check();
         markAllNotificationsRead($conn, $userId, $role);

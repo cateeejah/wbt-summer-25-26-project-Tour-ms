@@ -1,4 +1,5 @@
 <?php
+//TOUR REQUESTS (user side)
 function createTourRequest($conn, $userId, $title, $startDate, $endDate) {
     $stmt = mysqli_prepare($conn, "INSERT INTO tours (user_id, title, start_date, end_date, price, status) VALUES (?, ?, ?, ?, 0, 'pending')");
     mysqli_stmt_bind_param($stmt, 'isss', $userId, $title, $startDate, $endDate);
@@ -21,6 +22,7 @@ function getToursByUser($conn, $userId) {
     return $rows;
 }
 
+//User cancels their own tour request (only while still pending/unclaimed)
 function cancelOwnTour($conn, $tourId, $userId) {
     $stmt = mysqli_prepare($conn, "UPDATE tours SET status = 'canceled' WHERE id = ? AND user_id = ? AND status = 'pending'");
     mysqli_stmt_bind_param($stmt, 'ii', $tourId, $userId);
@@ -30,6 +32,7 @@ function cancelOwnTour($conn, $tourId, $userId) {
     return $affected > 0;
 }
 
+//GUIDE-CREATED TOUR OFFERINGS (browsable & bookable by users, like a listing)
 function getBookableGuideTours($conn) {
     $r = mysqli_query($conn, "SELECT tours.*, g.location AS guide_location, u.name AS guide_name
                                FROM tours
@@ -40,6 +43,9 @@ function getBookableGuideTours($conn) {
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
 }
 
+//User books a guide-created tour offering. Locks the tour row so two users
+//can't both book the same offering at once — same pattern as claimTour()
+//and bookListing().
 function bookGuideTour($conn, $tourId, $userId) {
     mysqli_begin_transaction($conn);
     try {
@@ -74,6 +80,7 @@ function bookGuideTour($conn, $tourId, $userId) {
     }
 }
 
+//LISTINGS BROWSING (hotels & vehicles)
 function getAvailableListings($conn, $category = null) {
     if ($category && in_array($category, ['hotels', 'vehicle'])) {
         $stmt = mysqli_prepare($conn, "SELECT l.*, v.company_name, v.address, v.type
@@ -96,6 +103,8 @@ function getAvailableListings($conn, $category = null) {
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
 }
 
+//Live search for the user Explore page: matches listing title or vendor
+//company name, only among currently available listings.
 function searchAvailableListings($conn, $term) {
     $like = '%' . $term . '%';
     $stmt = mysqli_prepare($conn, "SELECT l.*, v.company_name, v.address, v.type
@@ -111,6 +120,7 @@ function searchAvailableListings($conn, $term) {
     return $rows;
 }
 
+//DISCOUNTS
 function getActiveDiscountByCode($conn, $code) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM discounts WHERE code = ? AND status = 'active' AND valid_till >= CURDATE()");
     mysqli_stmt_bind_param($stmt, 's', $code);
@@ -120,6 +130,9 @@ function getActiveDiscountByCode($conn, $code) {
     return $row;
 }
 
+//BOOKINGS
+//Books a listing for the user, optionally applying a discount code. Locks the
+//listing row so two users can't both book it as 'available' at once.
 function bookListing($conn, $userId, $listingId, $discountCode = null) {
     mysqli_begin_transaction($conn);
     try {
@@ -191,6 +204,7 @@ function getBookingsByUser($conn, $userId) {
     return $rows;
 }
 
+//User cancels a confirmed booking; frees the listing back to available
 function cancelBooking($conn, $bookingId, $userId) {
     mysqli_begin_transaction($conn);
     try {
@@ -223,6 +237,7 @@ function cancelBooking($conn, $bookingId, $userId) {
     }
 }
 
+//SPECIAL REQUESTS (user -> vendor)
 function createSpecialRequest($conn, $userId, $vendorId, $requestType, $details) {
     $stmt = mysqli_prepare($conn, "INSERT INTO special_requests (user_id, vendor_id, request_type, details) VALUES (?, ?, ?, ?)");
     mysqli_stmt_bind_param($stmt, 'iiss', $userId, $vendorId, $requestType, $details);
@@ -236,6 +251,8 @@ function getVendorsForRequestForm($conn) {
     return mysqli_fetch_all($r, MYSQLI_ASSOC);
 }
 
+//RATINGS
+//Whether this user already rated a given guide for a given tour (one per completed tour)
 function hasRatedTourGuide($conn, $userId, $tourId) {
     $stmt = mysqli_prepare($conn, "SELECT tours.guide_id FROM tours WHERE tours.id = ? AND tours.user_id = ?");
     mysqli_stmt_bind_param($stmt, 'ii', $tourId, $userId);
@@ -245,6 +262,10 @@ function hasRatedTourGuide($conn, $userId, $tourId) {
 
     if (!$tour || !$tour['guide_id']) return true; // nothing to rate, treat as blocked
 
+    // one rating per completed tour: check via a marker row keyed loosely by user+target
+    // (schema has no tour_id on ratings, so we allow one rating per user per guide per
+    // completed tour by checking count of this user's completed tours with this guide
+    // versus count of ratings they've given this guide)
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as c FROM tours WHERE user_id = ? AND guide_id = ? AND status = 'completed'");
     mysqli_stmt_bind_param($stmt, 'ii', $userId, $tour['guide_id']);
     mysqli_stmt_execute($stmt);
@@ -271,6 +292,7 @@ function rateGuide($conn, $userId, $tourId, $guideId, $rating) {
     return $ok;
 }
 
+//One rating per confirmed booking of a listing
 function hasRatedBooking($conn, $userId, $bookingId, $listingId) {
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as c FROM bookings WHERE id = ? AND user_id = ? AND listing_id = ? AND status = 'confirmed'");
     mysqli_stmt_bind_param($stmt, 'iii', $bookingId, $userId, $listingId);

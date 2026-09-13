@@ -21,7 +21,8 @@ function loginCtrl($conn) {
             $user = authUser($conn, $email, $password);
 
             if ($user) {
-
+                //Prevent session fixation: issue a fresh session ID now that
+                //the user's privilege level is about to change.
                 regenerate_session();
 
                 $_SESSION['user'] = [
@@ -33,10 +34,12 @@ function loginCtrl($conn) {
                     'profile_picture' => $user['profile_picture'] ?? ''
                 ];
 
+                //Requirement: flat session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['name']    = $user['name'];
                 $_SESSION['role']    = $user['role'];
 
+                //Remember Me cookie
                 if ($remember) {
                     $token = bin2hex(random_bytes(32));
                     $hashed_token = hash('sha256', $token);
@@ -47,6 +50,7 @@ function loginCtrl($conn) {
                     setcookie('remember_token', '', time() - 3600, '/');
                 }
 
+                //Role-based Redirection
                 if ($user['role'] === 'admin') {
                     header('Location: index.php?page=admin');
                 } elseif ($user['role'] === 'guide') {
@@ -66,6 +70,7 @@ function loginCtrl($conn) {
     require 'app/views/auth/login.php';
 }
 
+//Handles the Registration Page and Logic
 function registerCtrl($conn) {
     $error = $success = '';
     $old = ['name' => '', 'email' => '', 'phone' => '', 'role' => 'user'];
@@ -81,12 +86,14 @@ function registerCtrl($conn) {
         $role     = $_POST['role'] ?? 'user';
         $old = compact('name', 'email', 'phone', 'role');
 
+        //Role-specific fields
         $guideLocation = trim($_POST['location'] ?? '');
         $guideRate     = $_POST['daily_rate'] ?? 0;
         $vendorType    = $_POST['vendor_type'] ?? 'hotel';
         $vendorCompany = trim($_POST['company_name'] ?? '');
         $vendorAddress = trim($_POST['address'] ?? '');
 
+        //Basic Validation
         if ($name === '' || $email === '' || $password === '') {
             $error = 'All fields are required.';
         } elseif (strlen($password) < 8) {
@@ -100,6 +107,7 @@ function registerCtrl($conn) {
         } elseif ($role === 'vendor' && $vendorCompany === '') {
             $error = 'Please provide your company name.';
         } else {
+            //Call the Model function
             $newId = addUser($conn, $name, $email, $password, $role, $phone);
             if ($newId) {
                 if ($role === 'guide') {

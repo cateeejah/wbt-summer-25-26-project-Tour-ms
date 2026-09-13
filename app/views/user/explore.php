@@ -86,7 +86,7 @@ $activeCategory = $_GET['category'] ?? '';
 
         <?php if ($activeCategory !== 'tours'): ?>
             <div class="field">
-                <input type="text" id="listingSearch" class="search-input" placeholder="Search by title or vendor name...">
+                <input type="text" id="listingSearch" placeholder="Search by title or vendor name...">
             </div>
         <?php endif; ?>
 

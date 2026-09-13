@@ -1,5 +1,5 @@
 <?php
-
+//Get a vendor's row by their user_id
 function getVendorByUserId($conn, $userId) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM vendors WHERE user_id = ?");
     mysqli_stmt_bind_param($stmt, 'i', $userId);
@@ -9,6 +9,7 @@ function getVendorByUserId($conn, $userId) {
     return $row;
 }
 
+//Update vendor's own company info
 function updateVendorProfile($conn, $vendorId, $companyName, $address) {
     $stmt = mysqli_prepare($conn, "UPDATE vendors SET company_name = ?, address = ? WHERE id = ?");
     mysqli_stmt_bind_param($stmt, 'ssi', $companyName, $address, $vendorId);
@@ -17,6 +18,7 @@ function updateVendorProfile($conn, $vendorId, $companyName, $address) {
     return $ok;
 }
 
+//LISTINGS CRUD
 function getListingsByVendor($conn, $vendorId) {
     $stmt = mysqli_prepare($conn, "SELECT * FROM listings WHERE vendor_id = ? ORDER BY id DESC");
     mysqli_stmt_bind_param($stmt, 'i', $vendorId);
@@ -26,6 +28,8 @@ function getListingsByVendor($conn, $vendorId) {
     return $rows;
 }
 
+//Live search over this vendor's own listings only — scoped by vendor_id so
+//a vendor can never search or see another vendor's inventory.
 function searchListingsByVendor($conn, $vendorId, $term) {
     $like = '%' . $term . '%';
     $stmt = mysqli_prepare($conn, "SELECT * FROM listings WHERE vendor_id = ? AND title LIKE ? ORDER BY id DESC");
@@ -77,6 +81,7 @@ function deleteListing($conn, $listingId, $vendorId) {
     return $ok;
 }
 
+//SPECIAL REQUESTS directed at this vendor
 function getRequestsByVendor($conn, $vendorId) {
     $stmt = mysqli_prepare($conn, "SELECT sr.*, u.name AS user_name, u.phone AS user_phone
                                     FROM special_requests sr
@@ -90,6 +95,9 @@ function getRequestsByVendor($conn, $vendorId) {
     return $rows;
 }
 
+//Vendor approves/rejects only their own requests (vendor_id must match).
+//Returns the request row (including user_id + request_type) on success so
+//the caller can notify the requesting user, or false if it wasn't found/theirs.
 function respondToRequest($conn, $requestId, $vendorId, $status) {
     $stmt = mysqli_prepare($conn, "SELECT user_id, request_type FROM special_requests WHERE id = ? AND vendor_id = ?");
     mysqli_stmt_bind_param($stmt, 'ii', $requestId, $vendorId);
@@ -110,6 +118,7 @@ function respondToRequest($conn, $requestId, $vendorId, $status) {
     return $affected > 0 ? $request : false;
 }
 
+//Booking counts per listing (for the vendor's own dashboard summary)
 function getVendorBookingSummary($conn, $vendorId) {
     $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count, COALESCE(SUM(b.total_amount),0) as revenue
                                     FROM bookings b
